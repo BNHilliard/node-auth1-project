@@ -10,9 +10,8 @@ const Users = require('../users/users-model')
   }
 */
 function restricted(req, res, next) {
-
   next();
-  
+
 }
 
 /*
@@ -24,15 +23,19 @@ function restricted(req, res, next) {
   }
 */
 function checkUsernameFree(req, res, next) {
+  if (!req.body.username) {
+    res.json({message: "username required"})
+    return;
+  }
   Users.findBy({'username': req.body.username})
   .then(resp => {
-    if (resp) {
+    if (resp.length) {
       res.status(422).json({ message: "Username taken"})
     } else { 
          next();
     }
   }).catch(err => {
-    res.status(500).json({message: "something is wrong with your middleware"});
+    res.status(500).json({message: "something is wrong with CHECKUSERNAMEFREE middleware"});
   })
 }
 
@@ -44,13 +47,13 @@ function checkUsernameFree(req, res, next) {
     "message": "Invalid credentials"
   }
 */
-function checkUsernameExists(req, res, next) {
-  Users.findBy(Users.findBy({'username': req.body.username}))
+async function checkUsernameExists (req, res, next) {
+  Users.findBy({'username': req.body.username})
   .then(resp => {
-    if (!resp) {
-      res.status(401).json({message: "Invalid credentials"})
-    } else {
+    if (resp.length) {
       next();
+    } else {
+      res.status(401).json("Invalid credentials")
     }
   }).catch(err => {
     res.status(500).json({message: "something is wrong with your middleware"})
