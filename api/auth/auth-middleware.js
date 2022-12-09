@@ -25,7 +25,7 @@ function restricted(req, res, next) {
   }
 */
 function checkUsernameFree(req, res, next) {
-  Users.findBy(req.body.username)
+  Users.findBy({'username': req.body.username})
   .then(resp => {
     if (resp) {
       res.status(422).json({ message: "Username taken"})
@@ -33,7 +33,7 @@ function checkUsernameFree(req, res, next) {
          next();
     }
   }).catch(err => {
-    next(err);
+    res.status(500).json({message: "something is wrong with your middleware"});
   })
 }
 
@@ -46,7 +46,16 @@ function checkUsernameFree(req, res, next) {
   }
 */
 function checkUsernameExists(req, res, next) {
-
+  Users.findBy(Users.findBy({'username': req.body.username}))
+  .then(resp => {
+    if (!resp) {
+      res.status(401).json({message: "Invalid credentials"})
+    } else {
+      next();
+    }
+  }).catch(err => {
+    res.status(500).json({message: "something is wrong with your middleware"})
+  })
 }
 
 /*
@@ -58,7 +67,11 @@ function checkUsernameExists(req, res, next) {
   }
 */
 function checkPasswordLength(req, res, next) {
-
+ if (!req.body.password || req.body.password.length < 3) {
+  res.status(422).json({message: "Password must be longer than 3 chars"})
+ } else {
+  next();
+ }
 }
 
 // Don't forget to add these to the `exports` object so they can be required in other modules
