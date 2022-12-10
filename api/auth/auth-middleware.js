@@ -11,17 +11,8 @@ const Users = require('../users/users-model')
 */
 function restricted(req, res, next) {
   next();
-
 }
 
-/*
-  If the username in req.body already exists in the database
-
-  status 422
-  {
-    "message": "Username taken"
-  }
-*/
 function checkUsernameFree(req, res, next) {
   if (!req.body.username) {
     res.json({message: "username required"})
@@ -39,21 +30,17 @@ function checkUsernameFree(req, res, next) {
   })
 }
 
-/*
-  If the username in req.body does NOT exist in the database
-
-  status 401
-  {
-    "message": "Invalid credentials"
-  }
-*/
-async function checkUsernameExists (req, res, next) {
+/* If the username in req.body does NOT exist in the database
+  status 401   { "message": "Invalid credentials" }*/
+function checkUsernameExists (req, res, next) {
+  console.log({'username': req.body.username})
   Users.findBy({'username': req.body.username})
   .then(resp => {
+    console.log(resp)
     if (resp.length) {
       next();
     } else {
-      res.status(401).json("Invalid credentials")
+      res.status(401).json({message: "Invalid credentials"})
     }
   }).catch(err => {
     res.status(500).json({message: "something is wrong with your middleware"})
@@ -76,6 +63,6 @@ function checkPasswordLength(req, res, next) {
  }
 }
 
-// Don't forget to add these to the `exports` object so they can be required in other modules
+
 
 module.exports = {restricted, checkUsernameFree, checkUsernameExists, checkPasswordLength}
