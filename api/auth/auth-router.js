@@ -46,6 +46,7 @@ router.post('/register', checkPasswordLength, checkUsernameFree, async (req, res
  */
   router.post('/login', checkUsernameExists, (req, res, next) => {    
     const {username, password} = req.body
+    req.session.user = username
     Users.findBy({'username': username}).first()
     .then(user => {
       console.log(user)
@@ -78,7 +79,7 @@ router.post('/register', checkPasswordLength, checkUsernameFree, async (req, res
  */
 
   router.get('/logout', (req, res, next) => {
-    if (req.session.id == null) {
+    if (!req.session.user) {
       res.status(200).json({message: "no session"})
     } else {
     req.session.destroy()
