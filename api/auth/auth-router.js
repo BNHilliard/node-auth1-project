@@ -10,7 +10,7 @@ const Users = require('../users/users-model')
 
 router.post('/register', checkPasswordLength, checkUsernameFree, async (req, res, next) => {
   Users.add({username: req.body.username, 
-            password: bcrypt.hashSync(req.body.password, 12)})
+            password: bcrypt.hashSync(req.body.password)})
   .then(resp => {
     res.json(resp);
   }).catch(err => {
@@ -44,8 +44,21 @@ router.post('/register', checkPasswordLength, checkUsernameFree, async (req, res
     "message": "Invalid credentials"
   }
  */
-  router.post('/login', checkUsernameExists, (req, res, next) => {
-    res.json('login achieved')
+  router.post('/login', checkUsernameExists, (req, res, next) => {    
+    const {username, password} = req.body
+    Users.findBy({'username': username}).first()
+    .then(user => {
+      console.log(user)
+      if (user == null) {
+        res.status(401).json({message: "Invalid credentials"})
+      } else if (bcrypt.compareSync(password, user.password)) {
+        req.session.user = user;
+        console.log(req.session.id)
+        res.status(200).json({message: `Welcome ${username}`})
+      } else {
+        res.status(401).json({message: "Invalid credentials"})
+      }
+    })
   })
 
 /**
